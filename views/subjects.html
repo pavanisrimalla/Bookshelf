@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subjects – Bookshelf</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="navbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="4" height="16" rx="1" fill="#A89CF7"/>
+        <rect x="9" y="6" width="4" height="14" rx="1" fill="#6EE7B7"/>
+        <rect x="15" y="3" width="4" height="17" rx="1" fill="#FCA5A5"/>
+        <rect x="2" y="19" width="20" height="2" rx="1" fill="#6B7280"/>
+      </svg>
+      Bookshelf
+    </a>
+    <div class="nav-actions">
+      <a href="book.html" class="nav-btn nav-btn-outline">Books</a>
+      <a href="login.html" class="nav-btn nav-btn-fill" id="navAuthBtn">Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-inner">
+
+    <h1 class="page-title">GATE CSE Subjects</h1>
+    <p class="page-sub">Subject-wise marks weightage. Click any subject to expand key topics.</p>
+
+    <!-- Marks summary -->
+    <div class="marks-grid">
+      <div class="marks-card">
+        <div class="marks-label">Core CSE</div>
+        <div class="marks-val">72</div>
+        <div class="marks-pct">72% of paper</div>
+      </div>
+      <div class="marks-card">
+        <div class="marks-label">Engg. Maths</div>
+        <div class="marks-val">13</div>
+        <div class="marks-pct">13% of paper</div>
+      </div>
+      <div class="marks-card">
+        <div class="marks-label">Gen. Aptitude</div>
+        <div class="marks-val">15</div>
+        <div class="marks-pct">15% of paper</div>
+      </div>
+    </div>
+
+    <div class="section-label">Core CSE Subjects</div>
+    <div id="coreList"><div style="color:var(--muted);font-size:.85rem;padding:1rem 0;">Loading subjects…</div></div>
+
+    <div class="section-label">Supporting Sections</div>
+    <div id="supportList"></div>
+
+    <p style="font-size:.75rem;color:var(--muted);margin-top:1.5rem;line-height:1.7;">
+      ⚠️ Negative marking: −⅓ for 1-mark MCQs, −⅔ for 2-mark MCQs. No negative marking for MSQ and NAT questions.
+      Total: 100 marks · 65 questions · 3 hours.
+    </p>
+
+  </div>
+</div>
+
+<footer>Bookshelf © 2026 &nbsp;·&nbsp; <a href="index.html">Home</a></footer>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// Static fallback data (used if backend has no subjects yet)
+const FALLBACK_CORE = [
+  { name:'Programming & Data Structures',        marks:9.7, priority:'high', topics:'Arrays, stacks, queues, linked lists, trees, BST, heaps, graphs. Recursion, C programming, pointers, memory management.' },
+  { name:'Algorithms',                           marks:8.7, priority:'high', topics:'Sorting & searching, divide-and-conquer, greedy, dynamic programming. Graph algorithms: BFS, DFS, Dijkstra, Kruskal, Prim. Big-O complexity.' },
+  { name:'Computer Networks',                    marks:8.3, priority:'high', topics:'OSI & TCP/IP models, IP addressing, subnetting, routing protocols, TCP/UDP, DNS, HTTP, network security, firewalls.' },
+  { name:'Operating Systems',                    marks:8.0, priority:'high', topics:'Processes, scheduling, synchronisation, deadlock, memory management, paging, virtual memory, file systems, I/O.' },
+  { name:'Theory of Computation',                marks:7.7, priority:'high', topics:'DFA, NFA, regular expressions, CFG, pushdown automata, Turing machines, decidability, P vs NP.' },
+  { name:'Computer Organisation & Architecture', marks:7.3, priority:'high', topics:'Number systems, Boolean algebra, combinational & sequential circuits, CPU design, pipelining, memory hierarchy, cache, DMA.' },
+  { name:'DBMS',                                 marks:6.7, priority:'med',  topics:'ER model, relational algebra, SQL, normalisation (1NF–BCNF), transactions, ACID, concurrency control, indexing, B-trees.' },
+  { name:'Digital Logic',                        marks:5.7, priority:'med',  topics:'Logic gates, Boolean minimisation (K-map), combinational circuits (MUX, adder), sequential circuits (flip-flops, counters).' },
+  { name:'Compiler Design',                      marks:4.7, priority:'low',  topics:'Lexical analysis, parsing (LL, LR, LALR), syntax-directed translation, intermediate code, optimisation, code generation.' },
+  { name:'Software Engineering',                 marks:3.0, priority:'low',  topics:'SDLC models, requirement analysis, UML, testing strategies, project management, COCOMO model.' },
+];
+const FALLBACK_SUPPORT = [
+  { name:'Engineering Mathematics', marks:13, priority:'high', topics:'Linear algebra, calculus, probability & statistics, discrete mathematics: logic, sets, graph theory, combinatorics.' },
+  { name:'General Aptitude',        marks:15, priority:'high', topics:'Verbal ability: grammar, comprehension, vocabulary. Numerical ability: arithmetic, algebra, data interpretation, reasoning.' },
+];
+
+const BAR_COLORS = { high:'#7F77DD', med:'#1A9E75', low:'#D97706' };
+
+function priorityBadge(p){
+  const labels = { high:'High priority', med:'Medium priority', low:'Lower priority' };
+  const cls    = { high:'badge-high',    med:'badge-med',       low:'badge-low' };
+  return `<span class="${cls[p]||'badge-low'}" style="font-size:.68rem;padding:2px 9px;border-radius:20px;font-weight:600;">${labels[p]||p}</span>`;
+}
+
+function getPriority(marks){
+  if(marks >= 7) return 'high';
+  if(marks >= 4) return 'med';
+  return 'low';
+}
+
+function renderList(subjects, containerId){
+  const el = document.getElementById(containerId);
+  if(!subjects.length){ el.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:.5rem 0;">No subjects found.</div>'; return; }
+  const maxMarks = 15;
+  el.innerHTML = subjects.map(s => {
+    const priority = s.priority || getPriority(s.marks);
+    const pct      = Math.min(100, Math.round((s.marks / maxMarks) * 100));
+    const barColor = BAR_COLORS[priority] || '#888';
+    return `<div class="subj-row" onclick="this.classList.toggle('open')">
+      <div class="subj-top">
+        <span class="subj-name">${s.name}</span>
+        ${priorityBadge(priority)}
+        <span class="subj-marks">~${s.marks} marks</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      ${s.topics ? `<div class="subj-topics">${s.topics}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function loadSubjects(){
+  try {
+    const res  = await fetch(`${API}/subjects`);
+    const data = await res.json();
+
+    if(Array.isArray(data) && data.length){
+      // Backend returned subjects — use them
+      // Separate into core (marks < 15) and support (Engineering Maths / General Aptitude)
+      const support = data.filter(s => s.marks >= 13 ||
+        s.name.toLowerCase().includes('aptitude') ||
+        s.name.toLowerCase().includes('mathematics'));
+      const core    = data.filter(s => !support.includes(s));
+
+      renderList(core.length    ? core    : data, 'coreList');
+      renderList(support.length ? support : [],   'supportList');
+    } else {
+      // Backend empty — use fallback static data
+      renderList(FALLBACK_CORE,    'coreList');
+      renderList(FALLBACK_SUPPORT, 'supportList');
+    }
+  } catch(_){
+    // Backend offline — use fallback
+    renderList(FALLBACK_CORE,    'coreList');
+    renderList(FALLBACK_SUPPORT, 'supportList');
+  }
+}
+
+function checkAuth(){
+  const token = localStorage.getItem('token');
+  const btn   = document.getElementById('navAuthBtn');
+  if(token){ btn.textContent='Logout'; btn.href='#'; btn.onclick=()=>{ localStorage.removeItem('token'); location.reload(); }; }
+}
+
+checkAuth();
+loadSubjects();
+</script>
+
+</body>
+</html>

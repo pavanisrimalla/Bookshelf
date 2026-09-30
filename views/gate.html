@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subjects – AI Bookshelf</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="navbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="4" height="16" rx="1" fill="#A89CF7"/>
+        <rect x="9" y="6" width="4" height="14" rx="1" fill="#6EE7B7"/>
+        <rect x="15" y="3" width="4" height="17" rx="1" fill="#FCA5A5"/>
+        <rect x="2" y="19" width="20" height="2" rx="1" fill="#6B7280"/>
+      </svg>
+      AI Bookshelf
+    </a>
+    <div class="nav-actions">
+      <a href="book.html"     class="nav-btn nav-btn-outline">Books</a>
+      <a href="login.html"    class="nav-btn nav-btn-fill">Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-inner">
+
+    <h1 class="page-title">GATE CSE Subjects</h1>
+    <p class="page-sub">Subject-wise marks weightage based on 3-year average (2023–2025). Click any subject to see key topics.</p>
+
+    <!-- Marks summary -->
+    <div class="marks-grid">
+      <div class="marks-card">
+        <div class="marks-label">Core CSE</div>
+        <div class="marks-val">72</div>
+        <div class="marks-pct">72% of paper</div>
+      </div>
+      <div class="marks-card">
+        <div class="marks-label">Engg. Maths</div>
+        <div class="marks-val">13</div>
+        <div class="marks-pct">13% of paper</div>
+      </div>
+      <div class="marks-card">
+        <div class="marks-label">Gen. Aptitude</div>
+        <div class="marks-val">15</div>
+        <div class="marks-pct">15% of paper</div>
+      </div>
+    </div>
+
+    <!-- Core subjects -->
+    <div class="section-label">Core CSE Subjects (72 marks)</div>
+    <div id="coreList"></div>
+
+    <!-- Supporting -->
+    <div class="section-label">Supporting Sections</div>
+    <div id="supportList"></div>
+
+    <p style="font-size:.75rem;color:var(--muted);margin-top:1.5rem;line-height:1.7;">
+      ⚠️ Negative marking: −⅓ for 1-mark MCQs, −⅔ for 2-mark MCQs. No negative marking for MSQ and NAT questions.
+      Total: 100 marks · 65 questions · 3 hours.
+    </p>
+
+  </div>
+</div>
+
+<footer>
+  AI Bookshelf © 2026 &nbsp;·&nbsp; <a href="index.html">Home</a>
+</footer>
+
+<script>
+const CORE = [
+  {name:'Programming & Data Structures', marks:9.7, priority:'high', bar:'#7F77DD',
+   topics:'Arrays, stacks, queues, linked lists, trees, BST, binary heaps, graphs. Recursion, C programming, pointers, memory allocation, and dynamic data structures.'},
+  {name:'Algorithms', marks:8.7, priority:'high', bar:'#7F77DD',
+   topics:'Sorting & searching, divide-and-conquer, greedy algorithms, dynamic programming. Graph algorithms: BFS, DFS, Dijkstra, Bellman-Ford, Kruskal, Prim. Time & space complexity (Big-O, Θ, Ω).'},
+  {name:'Computer Networks', marks:8.3, priority:'high', bar:'#7F77DD',
+   topics:'OSI & TCP/IP models, IP addressing & subnetting, routing protocols (OSPF, BGP, RIP), TCP vs UDP, DNS, HTTP/HTTPS, congestion control, network security, firewalls, cryptography basics.'},
+  {name:'Operating Systems', marks:8.0, priority:'high', bar:'#7F77DD',
+   topics:'Processes & threads, CPU scheduling, synchronisation (mutex, semaphore), deadlock detection & prevention, memory management, paging, segmentation, virtual memory, file systems, I/O management.'},
+  {name:'Theory of Computation', marks:7.7, priority:'high', bar:'#7F77DD',
+   topics:'Finite automata (DFA, NFA), regular expressions & languages, context-free grammars (CFG), pushdown automata, Turing machines, decidability, undecidability, P vs NP complexity classes.'},
+  {name:'Computer Organisation & Architecture', marks:7.3, priority:'high', bar:'#7F77DD',
+   topics:'Number systems, Boolean algebra, logic gates, combinational & sequential circuits, CPU organisation, instruction set architecture, pipelining, memory hierarchy, cache design, I/O interface, DMA.'},
+  {name:'DBMS', marks:6.7, priority:'med', bar:'#1D9E75',
+   topics:'ER model, relational model & algebra, SQL, normalisation (1NF–BCNF), transaction management, ACID properties, concurrency control (2PL, timestamp), indexing, B-trees & B+ trees.'},
+  {name:'Digital Logic', marks:5.7, priority:'med', bar:'#1D9E75',
+   topics:'Logic gates, Boolean minimisation (K-map, Quine-McCluskey), combinational circuits (MUX, encoder, adder, comparator), sequential circuits (flip-flops, registers, counters), finite state machines.'},
+  {name:'Compiler Design', marks:4.7, priority:'low', bar:'#D97706',
+   topics:'Lexical analysis, parsing (LL(1), LR(0), SLR, LALR, CLR), syntax-directed translation, intermediate code generation, code optimisation techniques, code generation.'},
+  {name:'Software Engineering', marks:3.0, priority:'low', bar:'#D97706',
+   topics:'SDLC models (waterfall, agile, spiral), requirement analysis, UML, software testing strategies, project management, COCOMO estimation model, software quality metrics.'},
+];
+
+const SUPPORT = [
+  {name:'Engineering Mathematics', marks:13, priority:'high', bar:'#5C4BDB',
+   topics:'Linear algebra (rank, eigenvalues), calculus (limits, differentiation, integration), probability & statistics, discrete mathematics: propositional logic, sets, relations, graph theory, combinatorics.'},
+  {name:'General Aptitude', marks:15, priority:'high', bar:'#5C4BDB',
+   topics:'Verbal ability: grammar, reading comprehension, sentence correction, vocabulary. Numerical ability: arithmetic, ratios, percentages, algebra, data interpretation, reasoning.'},
+];
+
+function badge(p){
+  if(p==='high') return '<span class="badge-high" style="font-size:.68rem;padding:2px 9px;border-radius:20px;font-weight:600;">High priority</span>';
+  if(p==='med')  return '<span class="badge-med"  style="font-size:.68rem;padding:2px 9px;border-radius:20px;font-weight:600;">Medium priority</span>';
+  return               '<span class="badge-low"  style="font-size:.68rem;padding:2px 9px;border-radius:20px;font-weight:600;">Lower priority</span>';
+}
+
+function renderList(subjects, containerId, maxForBar){
+  const el = document.getElementById(containerId);
+  el.innerHTML = subjects.map(s => {
+    const pct = Math.round((s.marks / maxForBar) * 100);
+    return `<div class="subj-row" onclick="this.classList.toggle('open')">
+      <div class="subj-top">
+        <span class="subj-name">${s.name}</span>
+        ${badge(s.priority)}
+        <span class="subj-marks">~${s.marks} marks</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${s.bar};"></div></div>
+      <div class="subj-topics">${s.topics}</div>
+    </div>`;
+  }).join('');
+}
+
+// Also try loading from backend and merge
+async function loadFromBackend(){
+  try {
+    const res  = await fetch('http://localhost:5000/api/subjects');
+    const data = await res.json();
+    // If backend returns subjects, update marks display for any matching subject
+    // (keeps static fallback working when backend is offline)
+  } catch(_){}
+}
+
+renderList(CORE,    'coreList',    15);
+renderList(SUPPORT, 'supportList', 15);
+loadFromBackend();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Books – Bookshelf</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="navbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="4" height="16" rx="1" fill="#A89CF7"/>
+        <rect x="9" y="6" width="4" height="14" rx="1" fill="#6EE7B7"/>
+        <rect x="15" y="3" width="4" height="17" rx="1" fill="#FCA5A5"/>
+        <rect x="2" y="19" width="20" height="2" rx="1" fill="#6B7280"/>
+      </svg>
+      Bookshelf
+    </a>
+    <div class="nav-actions">
+      <a href="subjects.html" class="nav-btn nav-btn-outline">Subjects</a>
+      <a href="login.html" class="nav-btn nav-btn-fill" id="navAuthBtn">Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="content-inner">
+
+    <h1 class="page-title">Bookshelf</h1>
+    <p class="page-sub">Add and manage your GATE CSE reference books.</p>
+
+    <!-- Add row -->
+    <div style="display:flex;gap:10px;margin-bottom:1.75rem;flex-wrap:wrap;">
+      <input type="text" id="bookInput"    class="form-field" placeholder="Book title (e.g. Operating System Concepts)" style="flex:2;margin:0;min-width:180px;" />
+      <input type="text" id="authorInput"  class="form-field" placeholder="Author (optional)" style="flex:1;margin:0;min-width:140px;" />
+      <input type="text" id="subjectInput" class="form-field" placeholder="Subject (optional)" style="flex:1;margin:0;min-width:130px;" />
+      <button class="btn-shelf btn-primary-shelf" onclick="addBook()">+ Add book</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search" placeholder="Search your shelf..." oninput="renderBooks()" />
+    </div>
+
+    <!-- Books area -->
+    <div id="mainArea"></div>
+
+  </div>
+</div>
+
+<footer>Bookshelf &copy; 2026 &nbsp;&middot;&nbsp; <a href="index.html">Home</a></footer>
+<div class="toast-notif" id="toast"></div>
+
+<script>
+var API   = 'http://localhost:5000/api';
+var SPINE = ['#7F77DD','#1A9E75','#D85A30','#D4537E','#378ADD','#639922','#BA7517'];
+var QUICK = [
+  {title:'Operating System Concepts',  author:'Silberschatz', subject:'Operating Systems'},
+  {title:'Computer Networks',          author:'Tanenbaum',    subject:'Computer Networks'},
+  {title:'Introduction to Algorithms', author:'Cormen et al.',subject:'Algorithms'},
+  {title:'Database System Concepts',   author:'Silberschatz', subject:'DBMS'},
+  {title:'Digital Design',             author:'Morris Mano',  subject:'Digital Logic'},
+  {title:'Compiler Design',            author:'Aho, Lam, Sethi', subject:'Compiler Design'}
+];
+
+var books = [];
+var ci    = 0;
+
+function esc(s){
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+/* Auth nav */
+function checkAuth(){
+  var token = localStorage.getItem('token');
+  var btn   = document.getElementById('navAuthBtn');
+  if(token){
+    btn.textContent = 'Logout';
+    btn.href = '#';
+    btn.onclick = function(){
+      localStorage.removeItem('token');
+      location.reload();
+    };
+  }
+}
+
+/* Render books */
+function renderBooks(){
+  var q    = (document.getElementById('search').value || '').toLowerCase();
+  var list = books.filter(function(b){
+    return b.title.toLowerCase().indexOf(q) !== -1 ||
+           (b.author  || '').toLowerCase().indexOf(q) !== -1 ||
+           (b.subject || '').toLowerCase().indexOf(q) !== -1;
+  });
+  var area = document.getElementById('mainArea');
+
+  if(books.length === 0){
+    var quickCards = QUICK.map(function(b){
+      return '<div class="quick-card" onclick="quickAdd(\'' + esc(b.title) + '\',\'' + esc(b.author) + '\',\'' + esc(b.subject) + '\')">' +
+        '<div class="spine" style="background:' + SPINE[ci++ % SPINE.length] + ';margin-bottom:8px;height:4px;border-radius:2px;"></div>' +
+        '<div class="qc-title">' + esc(b.title) + '</div>' +
+        '<div class="qc-author">' + esc(b.author) + '</div>' +
+        '<div class="qc-cta">+ Add to shelf</div>' +
+        '</div>';
+    }).join('');
+
+    area.innerHTML =
+      '<div class="empty-state">' +
+        '<div style="font-size:3rem;margin-bottom:1rem;">&#128218;</div>' +
+        '<div class="empty-title">Your shelf is empty</div>' +
+        '<div class="empty-sub">Add a book manually above, or pick a popular GATE reference below.</div>' +
+        '<div class="steps-row">' +
+          '<div class="step-box"><div class="step-num">Step 1</div><div class="step-text">Type a book title</div></div>' +
+          '<div class="step-box"><div class="step-num">Step 2</div><div class="step-text">Add author &amp; subject</div></div>' +
+          '<div class="step-box"><div class="step-num">Step 3</div><div class="step-text">Click Add book</div></div>' +
+          '<div class="step-box"><div class="step-num">Step 4</div><div class="step-text">Click to open book</div></div>' +
+        '</div>' +
+        '<p style="font-size:.78rem;color:var(--muted);text-align:left;margin-bottom:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Popular GATE books — click to add</p>' +
+        '<div class="quick-grid">' + quickCards + '</div>' +
+      '</div>';
+    return;
+  }
+
+  if(list.length === 0){
+    area.innerHTML = '<div class="empty-state"><div class="empty-title">No results</div><div class="empty-sub">Try a different search term.</div></div>';
+    return;
+  }
+
+  area.innerHTML = '<div class="books-grid">' + list.map(bookCard).join('') + '</div>';
+}
+
+function bookCard(b){
+  var link      = b.pdfLink ? b.pdfLink : ('https://www.google.com/search?q=' + encodeURIComponent(b.title + ' ' + (b.author || '') + ' PDF free'));
+  var linkLabel = b.pdfLink ? 'View PDF' : 'Search online';
+
+  var html = '<div class="shelf-card" style="display:flex;flex-direction:column;gap:8px;cursor:pointer;" onclick="window.open(\'' + link + '\',\'_blank\')">';
+  html += '<div class="spine" style="background:' + b._color + ';"></div>';
+  html += '<div style="font-size:.95rem;font-weight:600;line-height:1.35;">' + esc(b.title) + '</div>';
+  if(b.author)  html += '<div style="font-size:.8rem;color:var(--muted);">by ' + esc(b.author) + '</div>';
+  if(b.subject) html += '<span class="badge-genre">' + esc(b.subject) + '</span>';
+  html += '<a href="' + link + '" target="_blank" onclick="event.stopPropagation()" style="font-size:.78rem;color:var(--accent);text-decoration:none;margin-top:auto;">' + linkLabel + ' &#8599;</a>';
+  html += '<button class="btn-ghost" onclick="event.stopPropagation();removeBook(\'' + b._localId + '\')">Remove</button>';
+  html += '</div>';
+  return html;
+}
+
+/* Add book */
+function addBook(){
+  var title   = document.getElementById('bookInput').value.trim();
+  var author  = document.getElementById('authorInput').value.trim();
+  var subject = document.getElementById('subjectInput').value.trim();
+  if(!title){ document.getElementById('bookInput').focus(); return; }
+  document.getElementById('bookInput').value   = '';
+  document.getElementById('authorInput').value  = '';
+  document.getElementById('subjectInput').value = '';
+  addEntry(title, author, subject, '');
+}
+
+function quickAdd(title, author, subject){
+  addEntry(title, author, subject, '');
+}
+
+function addEntry(title, author, subject, pdfLink){
+  var id    = 'local_' + Date.now();
+  var entry = {
+    _localId: id,
+    title:    title,
+    author:   author,
+    subject:  subject,
+    pdfLink:  pdfLink,
+    _color:   SPINE[ci++ % SPINE.length]
+  };
+  books.unshift(entry);
+  renderBooks();
+  saveToBackend({title: title, author: author, subject: subject, pdfLink: pdfLink});
+  toast('Book added to shelf!');
+}
+
+function removeBook(localId){
+  books = books.filter(function(b){ return b._localId !== localId; });
+  renderBooks();
+  toast('Book removed from shelf');
+}
+
+/* Save to backend */
+function saveToBackend(bookData){
+  fetch(API + '/books', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify(bookData)
+  }).catch(function(){});
+}
+
+/* Load from backend */
+async function loadFromBackend(){
+  try {
+    var res  = await fetch(API + '/books');
+    var data = await res.json();
+    if(Array.isArray(data) && data.length){
+      data.forEach(function(b){
+        books.push({
+          _localId: b._id ? String(b._id) : ('be_' + Date.now() + Math.random()),
+          title:    b.title   || '',
+          author:   b.author  || '',
+          subject:  b.subject || '',
+          pdfLink:  b.pdfLink || '',
+          _color:   SPINE[ci++ % SPINE.length]
+        });
+      });
+      renderBooks();
+    }
+  } catch(e){}
+}
+
+document.getElementById('bookInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') addBook();
+});
+
+checkAuth();
+loadFromBackend();
+renderBooks();
+</script>
+
+</body>
+</html>

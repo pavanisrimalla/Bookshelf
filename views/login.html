@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – Bookshelf</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="navbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="4" height="16" rx="1" fill="#A89CF7"/>
+        <rect x="9" y="6" width="4" height="14" rx="1" fill="#6EE7B7"/>
+        <rect x="15" y="3" width="4" height="17" rx="1" fill="#FCA5A5"/>
+        <rect x="2" y="19" width="20" height="2" rx="1" fill="#6B7280"/>
+      </svg>
+      Bookshelf
+    </a>
+    <a href="register.html" class="nav-btn nav-btn-fill">Register</a>
+  </div>
+</nav>
+
+<div class="page-wrap" style="display:flex;align-items:center;justify-content:center;padding:3rem 1.25rem;">
+  <div style="width:100%;max-width:420px;">
+
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">📚</div>
+      <h1 style="font-family:var(--font-disp);font-size:1.75rem;color:var(--ink);margin-bottom:.4rem;">Welcome back</h1>
+      <p style="color:var(--muted);font-size:.9rem;">Sign in to access your bookshelf</p>
+    </div>
+
+    <div class="auth-card">
+      <form onsubmit="handleLogin(event)">
+
+        <label style="font-size:.8rem;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;">Email address</label>
+        <input type="email" id="email" class="form-field" placeholder="you@example.com" required />
+
+        <label style="font-size:.8rem;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;">Password</label>
+        <input type="password" id="password" class="form-field" placeholder="••••••••" required />
+
+        <button type="submit" id="loginBtn" class="btn-shelf btn-primary-shelf" style="width:100%;justify-content:center;padding:11px;margin-top:.25rem;">
+          Sign in
+        </button>
+
+        <p id="loginError" style="color:var(--red);font-size:.8rem;margin-top:.75rem;display:none;text-align:center;"></p>
+
+      </form>
+
+      <p style="text-align:center;font-size:.82rem;color:var(--muted);margin-top:1.5rem;">
+        Don't have an account?
+        <a href="register.html" style="color:var(--accent);font-weight:600;text-decoration:none;">Register</a>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<footer>Bookshelf © 2026</footer>
+
+<script>
+async function handleLogin(e){
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  btn.textContent = 'Signing in…';
+  btn.disabled    = true;
+  err.style.display = 'none';
+
+  try {
+    const res  = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    // Backend returns: { message: "Login Successful", token }
+    if(res.ok && data.token){
+      localStorage.setItem('token', data.token);
+      window.location.href = 'index.html';
+    } else {
+      err.textContent   = data.message || 'Login failed. Please try again.';
+      err.style.display = 'block';
+    }
+  } catch(_){
+    err.textContent   = 'Cannot connect to server. Make sure backend is running on port 5000.';
+    err.style.display = 'block';
+  }
+
+  btn.textContent = 'Sign in';
+  btn.disabled    = false;
+}
+</script>
+
+</body>
+</html>

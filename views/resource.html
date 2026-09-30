@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resources – Bookshelf</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="navbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="4" height="16" rx="1" fill="#A89CF7"/>
+        <rect x="9" y="6" width="4" height="14" rx="1" fill="#6EE7B7"/>
+        <rect x="15" y="3" width="4" height="17" rx="1" fill="#FCA5A5"/>
+        <rect x="2" y="19" width="20" height="2" rx="1" fill="#6B7280"/>
+      </svg>
+      Bookshelf
+    </a>
+    <div class="nav-actions">
+      <a href="book.html" class="nav-btn nav-btn-outline">Books</a>
+      <a href="login.html" class="nav-btn nav-btn-fill" id="navAuthBtn">Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-inner">
+
+    <h1 class="page-title">Study Resources</h1>
+    <p class="page-sub">Hand-picked websites, courses and communities for GATE CSE preparation.</p>
+
+    <!-- Dynamic resources from backend -->
+    <div id="dynamicResources"></div>
+
+    <!-- Static fallback resources always shown -->
+    <div class="section-label" id="staticLabel">Recommended Resources</div>
+
+    <a href="https://gateoverflow.in" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#EAE7FB;color:#5C4BDB;">🌊</div>
+      <div>
+        <div class="resource-name">GATE Overflow</div>
+        <div class="resource-desc">Best community resource — every GATE CSE question with verified answers</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a href="https://www.geeksforgeeks.org" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#E2F5EE;color:#1A9E75;">🟢</div>
+      <div>
+        <div class="resource-name">GeeksforGeeks</div>
+        <div class="resource-desc">Comprehensive articles, practice problems and GATE-focused topic coverage</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a href="https://nptel.ac.in" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#FEE2E2;color:#DC2626;">🎓</div>
+      <div>
+        <div class="resource-name">NPTEL</div>
+        <div class="resource-desc">Free IIT video courses for OS, DBMS, Networks, Algorithms and more</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a href="https://www.youtube.com/@GateSmashers" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#FEF3C7;color:#D97706;">▶️</div>
+      <div>
+        <div class="resource-name">Gate Smashers</div>
+        <div class="resource-desc">Popular YouTube channel with subject-wise GATE CSE playlists</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a href="https://www.tutorialspoint.com" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#E2F5EE;color:#1A9E75;">📘</div>
+      <div>
+        <div class="resource-name">TutorialsPoint</div>
+        <div class="resource-desc">Quick-reference tutorials on every CS topic in the GATE syllabus</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+    <a href="https://www.madeeasy.in" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#EAE7FB;color:#5C4BDB;">✏️</div>
+      <div>
+        <div class="resource-name">MADE EASY</div>
+        <div class="resource-desc">Free study material and test series for GATE CSE</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+  </div>
+</div>
+
+<footer>Bookshelf © 2026 &nbsp;·&nbsp; <a href="index.html">Home</a></footer>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// Type → icon + color mapping
+const TYPE_STYLE = {
+  video:    { icon:'▶️', bg:'#FEF3C7', color:'#D97706' },
+  article:  { icon:'📰', bg:'#E2F5EE', color:'#1A9E75' },
+  practice: { icon:'✏️', bg:'#EAE7FB', color:'#5C4BDB' },
+  course:   { icon:'🎓', bg:'#FEE2E2', color:'#DC2626' },
+  default:  { icon:'🔗', bg:'#F1EFE8', color:'#888780' },
+};
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function loadResources(){
+  try {
+    const res  = await fetch(`${API}/resources`);
+    const data = await res.json();
+    if(!Array.isArray(data) || !data.length) return;
+
+    const container = document.getElementById('dynamicResources');
+    // don't change label if backend is empty
+
+    // Group by subject
+    const grouped = {};
+    data.forEach(r => {
+      const key = r.subject || 'General';
+      if(!grouped[key]) grouped[key] = [];
+      grouped[key].push(r);
+    });
+
+    let html = '';
+    for(const [subject, items] of Object.entries(grouped)){
+      html += `<div class="section-label">${esc(subject)}</div>`;
+      items.forEach(r => {
+        const style = TYPE_STYLE[r.type?.toLowerCase()] || TYPE_STYLE.default;
+        html += `<a href="${esc(r.link||'#')}" target="_blank" class="resource-item">
+          <div class="resource-icon" style="background:${style.bg};color:${style.color};">${style.icon}</div>
+          <div>
+            <div class="resource-name">${esc(r.title||'Resource')}</div>
+            <div class="resource-desc">${esc(r.type||'')}${r.subject ? ` · ${esc(r.subject)}` : ''}</div>
+          </div>
+          <span class="resource-arrow">↗</span>
+        </a>`;
+      });
+    }
+    container.innerHTML = html;
+  } catch(_){}
+}
+
+function checkAuth(){
+  const token = localStorage.getItem('token');
+  const btn   = document.getElementById('navAuthBtn');
+  if(token){ btn.textContent='Logout'; btn.href='#'; btn.onclick=()=>{ localStorage.removeItem('token'); location.reload(); }; }
+}
+
+checkAuth();
+loadResources();
+</script>
+
+</body>
+</html>

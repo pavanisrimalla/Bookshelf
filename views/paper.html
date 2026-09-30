@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Previous Papers – Bookshelf</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="navbar-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="4" height="16" rx="1" fill="#A89CF7"/>
+        <rect x="9" y="6" width="4" height="14" rx="1" fill="#6EE7B7"/>
+        <rect x="15" y="3" width="4" height="17" rx="1" fill="#FCA5A5"/>
+        <rect x="2" y="19" width="20" height="2" rx="1" fill="#6B7280"/>
+      </svg>
+      Bookshelf
+    </a>
+    <div class="nav-actions">
+      <a href="book.html" class="nav-btn nav-btn-outline">Books</a>
+      <a href="login.html" class="nav-btn nav-btn-fill" id="navAuthBtn">Login</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-inner">
+
+    <h1 class="page-title">Previous Year Papers</h1>
+    <p class="page-sub">Practice with GATE CSE question papers. Solving past papers is the most effective prep strategy.</p>
+
+    <!-- Tip -->
+    <div style="background:var(--accent-lt);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:1rem 1.25rem;margin-bottom:2rem;font-size:.85rem;color:var(--ink-soft);line-height:1.7;">
+      💡 <strong>Tip:</strong> Attempt at least 5 years of previous papers under timed conditions. Papers from 2016 onwards follow the current pattern with MSQs and NATs.
+    </div>
+
+    <div class="section-label">GATE CSE Papers</div>
+    <div id="paperList"><div style="color:var(--muted);font-size:.85rem;padding:1rem 0;">Loading papers…</div></div>
+
+    <div class="section-label" style="margin-top:2rem;">More Resources</div>
+    <a href="https://gateoverflow.in" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#EAE7FB;color:#5C4BDB;">🌊</div>
+      <div>
+        <div class="resource-name">GATE Overflow</div>
+        <div class="resource-desc">Community Q&A for every GATE CSE question ever asked</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+    <a href="https://www.geeksforgeeks.org/gate-cs-notes-gq/" target="_blank" class="resource-item">
+      <div class="resource-icon" style="background:#E2F5EE;color:#1A9E75;">🟢</div>
+      <div>
+        <div class="resource-name">GeeksforGeeks GATE</div>
+        <div class="resource-desc">Topic-wise practice questions and GATE notes</div>
+      </div>
+      <span class="resource-arrow">↗</span>
+    </a>
+
+  </div>
+</div>
+
+<footer>Bookshelf © 2026 &nbsp;·&nbsp; <a href="index.html">Home</a></footer>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+// Fallback papers — used when backend is empty
+const FALLBACK_PAPERS = [
+  { exam:'GATE CSE', year:2025, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/82/gate2025-cs' },
+  { exam:'GATE CSE', year:2024, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/62/gate2024-cs' },
+  { exam:'GATE CSE', year:2023, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/49/gate2023-cs' },
+  { exam:'GATE CSE', year:2022, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/41/gate2022-cs' },
+  { exam:'GATE CSE', year:2021, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/33/gate2021-cs' },
+  { exam:'GATE CSE', year:2020, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/26/gate2020-cs' },
+  { exam:'GATE CSE', year:2019, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/22/gate2019-cs' },
+  { exam:'GATE CSE', year:2018, subject:'Computer Science', pdfLink:'https://gateoverflow.in/exam/17/gate2018-cs' },
+];
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderPapers(papers){
+  const el = document.getElementById('paperList');
+  if(!papers.length){ el.innerHTML='<div style="color:var(--muted);font-size:.85rem;">No papers found.</div>'; return; }
+  el.innerHTML = papers.map(p => `
+    <div class="paper-card">
+      <div class="paper-icon">📄</div>
+      <div style="flex:1;">
+        <div class="paper-title">${esc(p.exam||'GATE CSE')} ${p.year||''}</div>
+        <div class="paper-meta">Subject: ${esc(p.subject||'Computer Science')} &nbsp;·&nbsp; 65 questions &nbsp;·&nbsp; 100 marks</div>
+      </div>
+      ${p.pdfLink
+        ? `<a href="${esc(p.pdfLink)}" target="_blank" class="btn-shelf btn-primary-shelf" style="flex-shrink:0;">View paper ↗</a>`
+        : `<span style="font-size:.78rem;color:var(--muted);">No link</span>`
+      }
+    </div>`).join('');
+}
+
+async function loadPapers(){
+  try {
+    const res  = await fetch(`${API}/papers`);
+    const data = await res.json();
+    renderPapers(Array.isArray(data) && data.length ? data : FALLBACK_PAPERS);
+  } catch(_){
+    renderPapers(FALLBACK_PAPERS);
+  }
+}
+
+function checkAuth(){
+  const token = localStorage.getItem('token');
+  const btn   = document.getElementById('navAuthBtn');
+  if(token){ btn.textContent='Logout'; btn.href='#'; btn.onclick=()=>{ localStorage.removeItem('token'); location.reload(); }; }
+}
+
+checkAuth();
+loadPapers();
+</script>
+
+</body>
+</html>
