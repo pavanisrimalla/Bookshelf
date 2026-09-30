@@ -1,0 +1,4 @@
+{
+  "outputDirectory": "views",
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }]
+}
