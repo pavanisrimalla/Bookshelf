@@ -128,7 +128,7 @@ function renderList(subjects, containerId, maxForBar){
 // Also try loading from backend and merge
 async function loadFromBackend(){
   try {
-    const res  = await fetch('http://localhost:5000/api/subjects');
+    const res  = await fetch('/api/subjects');
     const data = await res.json();
     // If backend returns subjects, update marks display for any matching subject
     // (keeps static fallback working when backend is offline)
