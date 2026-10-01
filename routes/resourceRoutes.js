@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Resource = require("../models/Resource");
+const Resource = require("../models/resource");
 
 // Get all resources
 router.get("/", async (req, res) => {

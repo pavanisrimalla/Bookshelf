@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Paper = require("../models/Paper");
+const Paper = require("../models/paper");
 
 router.get("/", async (req, res) => {
   const papers = await Paper.find();
